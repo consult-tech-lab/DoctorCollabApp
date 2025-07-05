@@ -1,13 +1,11 @@
-import { Configuration, OpenAIApi } from 'openai';
-
-const config = new Configuration({
-  apiKey: 'YOUR_OPENAI_API_KEY',
+import { OpenAI } from 'openai';
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // make sure your .env has this key
 });
-const openai = new OpenAIApi(config);
 
 export async function summarizeText(text) {
   try {
-    const response = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
@@ -16,9 +14,9 @@ export async function summarizeText(text) {
         },
       ],
     });
-
-    return response.data.choices[0].message.content;
+    return completion.choices[0].message.content;
   } catch (error) {
-    return `Summary failed: ${error.message}`;
+    console.error('OpenAI API error:', error);
+    throw new Error('Failed to get summary from OpenAI');
   }
 }

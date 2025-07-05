@@ -1,5 +1,3 @@
-import { auth } from './firebase';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import React, { useState, useEffect } from 'react';
 import { Tabs, Tab, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
@@ -7,7 +5,16 @@ import 'react-tabs/style/react-tabs.css';
 import { auth } from './firebase';
 import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { translateText } from './translate';
-import { summarizeText } from './openaiSummary';
+// New secure API call
+const response = await fetch('/api/summarize', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ text: fullText }),
+});
+
+const data = await response.json();
+const summary = data.summary;
+
 import pdfjsLib from 'pdfjs-dist';
 export default function DoctorCollabApp() {
   const [user, setUser] = useState(null);
@@ -47,7 +54,13 @@ export default function DoctorCollabApp() {
           const content = await page.getTextContent();
           fullText += content.items.map(item => item.str).join(' ');
         }
-        const summary = await summarizeText(fullText);
+        const response = await fetch('/api/summarize', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ text: fullText }),
+});
+const data = await response.json();
+const summary = data.summary;
         const translated = await translateText(summary, language);
         setDocuments([...documents, file]);
         setAiSummary(translated);
